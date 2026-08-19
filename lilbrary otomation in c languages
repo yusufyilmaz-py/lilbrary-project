@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <graphics.h>
+
+// Kitap bilgilerini tutan yap�
+struct Kitap {
+    int kitapNo;
+    char isim[50];
+    char yazar[50];
+    char tur[30];
+    char yayinevi[50];
+} kitap;
+
+// --- Dosya ��lemleri ---
+int kitapAra(int arananNo) {
+    FILE *dosya = fopen("kutuphane.txt", "r");
+    if (dosya == NULL) {
+        printf("Dosya acilamadi!\n");
+        return 0;
+    }
+
+    while (fscanf(dosya, "%d %s %s %s %s",
+                  &kitap.kitapNo,
+                  kitap.isim,
+                  kitap.yazar,
+                  kitap.tur,
+                  kitap.yayinevi) != EOF) {
+        if (kitap.kitapNo == arananNo) {
+            fclose(dosya);
+            return 1; // bulundu
+        }
+    }
+
+    fclose(dosya);
+    return 0; // bulunamadi
+}
+
+// --- Grafik ��lemleri ---
+void kitapYazdirEkran() {
+    char buf[100];
+    setcolor(WHITE);
+
+    sprintf(buf, "Kitap No: %d", kitap.kitapNo);
+    outtextxy(100, 200, buf);
+
+    sprintf(buf, "Isim: %s", kitap.isim);
+    outtextxy(100, 220, buf);
+
+    sprintf(buf, "Yazar: %s", kitap.yazar);
+    outtextxy(100, 240, buf);
+
+    sprintf(buf, "Tur: %s", kitap.tur);
+    outtextxy(100, 260, buf);
+
+    sprintf(buf, "Yayinevi: %s", kitap.yayinevi);
+    outtextxy(100, 280, buf);
+}
+
+void butonCiz(int x1, int y1, int x2, int y2, int renk, char *yazi, int yazirenk) {
+    setcolor(renk);
+    setfillstyle(SOLID_FILL, renk);
+    rectangle(x1, y1, x2, y2);
+    floodfill(x1+5, y1+5, renk);
+    setcolor(yazirenk);
+    outtextxy(x1 + 20, y1 + 20, yazi);
+}
+
+void butonAnimasyon() {
+    // Buton a�a�� insin
+    butonCiz(150, 155, 300, 205, BLUE, "KITAP GOSTER", WHITE);
+    delay(200);
+    // Eski yerine geri gelsin
+    butonCiz(150, 150, 300, 200, BLUE, "KITAP GOSTER", WHITE);
+}
+
+// --- Ana Program ---
+int main() {
+    int arananNo;
+    printf("Aramak istediginiz kitap numarasini giriniz: ");
+    scanf("%d", &arananNo);
+
+    if (!kitapAra(arananNo)) {
+        printf("Kitap bulunamadi!\n");
+        return 0;
+    }
+
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    // Mavi buton, yaz�s� beyaz
+    butonCiz(150, 150, 300, 200, BLUE, "KITAP GOSTER", WHITE);
+
+    // Mouse kontrol�
+    while (1) {
+        if (ismouseclick(WM_LBUTTONDOWN)) {
+            int x, y;
+            getmouseclick(WM_LBUTTONDOWN, x, y);
+
+            if (x >= 150 && x <= 300 && y >= 150 && y <= 200) {
+                butonAnimasyon();
+                kitapYazdirEkran();
+                break;
+            }
+        }
+        delay(100);
+    }
+
+    getch();
+    closegraph();
+    return 0;
+}
+
